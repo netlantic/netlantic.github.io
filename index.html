@@ -38,7 +38,9 @@
       const form = document.querySelector('form');
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        node.pubsub.publish(topic, node.types.Buffer(e.target[0].value));
+        const message = e.target[0].value.trim();
+        if (message === '') return;
+        node.pubsub.publish(topic, node.types.Buffer(message));
         e.target[0].value = '';
       })
     })
