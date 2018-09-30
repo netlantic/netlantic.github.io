@@ -26,22 +26,73 @@
     node.once('ready', () => {
       document.getElementById("status").innerHTML = 'Node status: ' + (node.isOnline() ? 'online' : 'offline')
 
-      const textarea = document.querySelector('#textarea');
-      const receiveMsg = msg => textarea.value = (msg.data.toString());
-      node.pubsub.subscribe(topic, receiveMsg)
-      textarea.addEventListener('keyup', ({ target: { value } }) => {
-        node.pubsub.publish(topic, node.types.Buffer(value));
-      })
+      const messages = [];
+      const receiveMsg = msg => {
+        const message = msg.data.toString().replace(/\n|<.*?>/g, '');
+        messages.push(message);
+        document.querySelector('.chat-body').innerHTML = messages.map(m => `<div class='message'><pre>${m}</pre></div><hr />`).join('');
+      }
 
+      node.pubsub.subscribe(topic, receiveMsg)
+      const form = document.querySelector('form');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        node.pubsub.publish(topic, node.types.Buffer(e.target[0].value));
+        e.target[0].value = '';
+      })
     })
 
   </script>
+  <style>
+    html,
+    body {
+      margin: 0px;
+      padding: 0px;
+      height: 100vh;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .chat-body {
+      flex: 1;
+    }
+    .chat-body .message{
+      padding-left: 8px;
+    }
+    .chat-input form {
+      display: flex;
+    }
+
+    .chat-input input {
+      flex: 1;
+      font-size: 21px;
+      padding: 20px;
+    }
+    .chat-input button{
+      width: 100px;
+    }
+  </style>
 </head>
 
 <body>
+  <div class="app" style='display:flex; flex-direction: column;'>
+    <div class="header">
+      <h1 id="status">Node status: offline</h1>
+    </div>
+    <div class="chat-body">
 
-  <h1 id="status">Node status: offline</h1>
-  <textarea id='textarea'></textarea>
+    </div>
+    <div class="chat-input">
+      <form>
+        <input type='text' id='textarea' />
+        <button>Send</button>
+      </form>
+    </div>
+  </div>
 </body>
 
 </html>
